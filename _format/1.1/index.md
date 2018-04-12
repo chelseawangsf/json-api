@@ -24,33 +24,44 @@ interpreted as described in RFC 2119
 
 ## <a href="#content-negotiation" id="content-negotiation" class="headerlink"></a> Content Negotiation
 
-### <a href="#content-negotiation-clients" id="content-negotiation-clients" class="headerlink"></a> Client Responsibilities
+### <a href="#content-negotiation-all" id="content-negotiation-all" class="headerlink"></a> Universal Responsibilities
 
-Clients **MUST** send all JSON API data in request documents with the header
-`Content-Type: application/vnd.api+json` without any media type parameters.
+The JSON API media type is [`application/vnd.api+json`](http://www.iana.org/assignments/media-types/application/vnd.api+json).
+Clients and servers **MUST** send all JSON API data using this media type in the
+`Content-Type` header.
+
+Further, the JSON API media type **MUST** always be specified with either no
+media type parameters or with only the `profile` parameter. This applies to both
+the `Content-Type` and `Accept` headers.
+
+> Note: A media type parameter is an extra piece of information that can
+accompany a media type. For example, in the header
+`Content-Type: text/html; charset="utf-8"`, the media type is `text/html` and
+`charset` is a parameter.
+
+The `profile` parameter is used to support [profiles].
+
+### <a href="#content-negotiation-clients" id="content-negotiation-clients" class="headerlink"></a> Client Responsibilities
 
 Clients that include the JSON API media type in their `Accept` header **MUST**
 specify the media type there at least once without any media type parameters.
 
-Clients **MUST** ignore any parameters for the `application/vnd.api+json`
-media type received in the `Content-Type` header of response documents.
+When processing a JSON API response document, clients **MUST** ignore any
+parameters other than `profile` in the server's `Content-Type` header.
 
 ### <a href="#content-negotiation-servers" id="content-negotiation-servers" class="headerlink"></a> Server Responsibilities
 
-Servers **MUST** send all JSON API data in response documents with the header
-`Content-Type: application/vnd.api+json` without any media type parameters.
-
 Servers **MUST** respond with a `415 Unsupported Media Type` status code if
 a request specifies the header `Content-Type: application/vnd.api+json`
-with any media type parameters.
+with any media type parameters other than `profile`.
 
 Servers **MUST** respond with a `406 Not Acceptable` status code if a
 request's `Accept` header contains the JSON API media type and all instances
 of that media type are modified with media type parameters.
 
-> Note: The content negotiation requirements exist to allow future versions
-of this specification to use media type parameters for extension negotiation
-and versioning.
+> Note: These content negotiation requirements exist to allow future versions
+of this specification to add other media type parameters for extension
+negotiation and versioning.
 
 ## <a href="#document-structure" id="document-structure" class="headerlink"></a> Document Structure
 
@@ -1780,6 +1791,56 @@ parameter from this specification, it **MUST** return `400 Bad Request`.
 
 > Note: This is to preserve the ability of JSON API to make additive additions
 to standard query parameters without conflicting with existing implementations.
+
+## <a href="#profiles" id="profiles" class="headerlink"></a> Profiles
+
+JSON API supports the use of "profiles" as a means to describe additional
+semantics to the media type, without altering the basic semantics described in
+this specification.
+
+[RFC 6906](https://tools.ietf.org/html/rfc6906) covers the nature of profile
+identification:
+
+> Profiles are identified by URI.  However, as is the case with, for
+  example, XML namespace URIs, the URI in this case only serves as an
+  identifier, meaning that the presence of a specific URI has to be
+  sufficient for a client to assert that a resource representation
+  conforms to a profile.  Thus, clients SHOULD treat profile URIs as
+  identifiers and not as links, but profiles MAY be defined in a way
+  that the URIs do identify retrievable profile description and thus
+  can be accessed by clients by dereferencing the profile URI.  For
+  profiles intended for use in environments where clients may encounter
+  unknown profile URIs, profile maintainers SHOULD consider to make the
+  profile URI dereferencable and provide useful documentation at that
+  URI.  The design and representation of such profile descriptions,
+  however, is outside the scope of this specification.
+
+### <a href="#profile-media-type-parameter" id="profile-media-type-parameter" class="headerlink"></a> `profile` Media Type Parameter
+
+The `profile` media type parameter is used to describe the application of
+one or more profiles to the JSON API media type. The value of the `profile`
+parameter **MUST** equal a whitespace-separated list of profile URIs.
+
+Clients and servers **SHOULD** use the `profile` media type parameter in
+conjunction with the JSON API media type in a `Content-Type` header to specify
+the application of one or more profiles to a JSON API document.
+
+A client **MAY** use the `profile` media type parameter in conjunction with the
+JSON API media type in an `Accept` header to _request_, but not _require_, that
+the server apply one or more profiles in processing a request. When such a
+request is received, a server **SHOULD** attempt to apply the requested profiles
+in processing a response.
+
+### <a href="#profile-query-parameter" id="profile-query-parameter" class="headerlink"></a> `profile` Query Parameter
+
+A client **MAY** use the `profile` query parameter to _require_ the application
+of one or more profiles to the JSON API media type in processing a request. The
+value of the `profile` query parameter **MUST** equal a URI-encoded
+whitespace-separated list of profile URIs.
+
+If a server receives a request requiring the application of a profile or
+combination of profiles that it can not apply, it **MUST** respond with a `406
+Not Acceptable` status code.
 
 ## <a href="#errors" id="errors" class="headerlink"></a> Errors
 

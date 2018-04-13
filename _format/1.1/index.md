@@ -1815,6 +1815,21 @@ identification:
   URI.  The design and representation of such profile descriptions,
   however, is outside the scope of this specification.
 
+A profile **MAY** assign meaning to particular elements of the document
+structure, such as resource attributes or members of meta objects, and even
+reserved query parameters, such as `filter`. The scope of a profile **MUST** be
+clearly delineated. The elements reserved by a profile, and the meaning assigned
+to those elements, **MUST NOT** change over time or else the profile **MUST** be
+considered a new profile with a new URI. However, a profile **MAY** evolve
+additively within the scope originally claimed by the profile.
+
+For example, let's say that a profile reserves a `timestamps` member in the
+`meta` object of every resource. Originally, this profile defines the value
+of `timestamps` as an object that must contain one member: `created`. The
+profile could evolve to allow an optional member, `updated`, in the `timestamps`
+object. But it could not make that member required, nor could it introduce
+a new sibling to `timestamps`.
+
 ### <a href="#profile-media-type-parameter" id="profile-media-type-parameter" class="headerlink"></a> `profile` Media Type Parameter
 
 The `profile` media type parameter is used to describe the application of
